@@ -37,13 +37,23 @@ const veterinarioSchema = mongoose.Schema({
         default: false
     }
 })
-veterinarioSchema.pre('save',async function(next){
-    if(this.isModified('password')){
+
+
+
+veterinarioSchema.method.comprobarPassword = async function(passwordFormulario) {
+    return await bcrypt.compare(passwordFormulario,this.password)
+};
+veterinarioSchema.pre('save', async function(next){
+    
+    if(!this.isModified('password')){
             next();
     }
     const salt = await bcrypt.genSalt(10);
-    this.password =await bcrypt.hash(this.password,salt);
+    this.password = await bcrypt.hash(this.password,salt);
 });
+
+
+
 const veterinario = mongoose.model('Veterinario',veterinarioSchema);
 
 export default veterinario;

@@ -1,3 +1,4 @@
+import generarJWT from "../helpers/generarJWT.js";
 import veterinario from "../models/veterinario.js"
 
 
@@ -15,6 +16,7 @@ const registrar = async (req,res) =>{
     //guardando veterinario
     try {
         const Veterinario  = new veterinario(req.body)
+    
         const veterinarioGuardado = await   Veterinario.save();
     res.json(veterinarioGuardado)
         
@@ -54,12 +56,24 @@ const autenticar = async (req,res) =>{
 
     //comprobando si el usuario existe
     const usuarioExiste = await veterinario.findOne({email})
-    if(usuarioExiste){
-        res.json({msg:'autenticando'})
-
-    }else{
+    if(!usuarioExiste){
         res.status(403).json({msg:'El Usuario no Existe'})
     }
+    //verificar si el usuario esta verificado
+    if(!usuarioExiste.confirmado){
+        const error = new Error('Tu cuenta no ha sido Confirmada')
+        return res.status(403).json({msg:error.message})
+    }
+
+    //verifiicar el Password
+    if( await usuarioExiste.comprobarPassword(password)){
+        //autenticar
+        // res.json({token: generarJWT()})
+    }else{
+        const error = new Error('Password Incorrecto')
+        return res.status(403).json({msg:error.message})
+    }
+    
 }
 export {
         registrar,
